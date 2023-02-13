@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Unit converter</title>
+  <script src="parse_duration.js"></script>
+  <style>
+head, body {
+  margin: 0;
+  padding: 0;
+}
+
+body, div, input, button {
+  display: flex;
+}
+
+body {
+  flex-direction: column;
+}
+
+h1 {
+  padding-left: 16px;
+}
+
+#convert {
+  border: 1px solid black;
+  flex-direction: row;
+}
+
+#input, #output {
+  border: 1px solid blue;
+  flex-grow: 1;
+  justify-content: center;
+}
+
+.picker {
+  flex-direction: column;
+  align-items: center;
+}
+
+.qty input {
+  width: 200px;
+  margin-right: 40px;
+}
+
+#samples {
+  border: 1px solid red;
+}
+
+body, div, input, button {
+  font-size: 28px;
+  line-height: 2em;
+}
+
+button, input {
+  cursor: pointer;
+  text-align: center;
+}
+input[readonly] {
+  background-color: lightgreen;
+  cursor: not-allowed;
+}
+button {
+  align-self: center;
+}
+
+  </style>
+  <script>
+
+STATE = {
+  show_dur2qty: false
+}
+
+function redraw() {
+  document.querySelector(".picker.qty2dur").style.display = STATE.show_dur2qty ? 'none' : 'flex';
+  document.querySelector(".picker.dur2qty").style.display = STATE.show_dur2qty ? 'flex' : 'none';
+}
+
+function _get_qty(id) {
+  let val = parseFloat(document.getElementById(id).value);
+  return isNaN(val) ? undefined : val;
+}
+
+function _get_dur(id) {
+  let val = parseDuration(document.getElementById(id).value);
+  return val;
+}
+
+function _calc_qty(inQ, inD, outD) {
+  return outD * inQ / inD;
+}
+
+function _calc_dur(inQ, inD, outQ) {
+  return fmtDuration(outQ * inD / inQ);
+}
+
+function handle(data) {
+  let in_qty = _get_qty('in_qty'),
+      in_dur = _get_dur('in_dur');
+  if (in_qty === undefined || in_dur === undefined) return;
+
+  if (STATE.show_dur2qty) {
+    let out_dur = _get_dur('out_dur_2');
+    if (out_dur === undefined) return;
+    document.getElementById('out_qty_2').value = _calc_qty(in_qty, in_dur, out_dur);
+  } else {
+    let out_qty = _get_qty('out_qty_1');
+    if (out_qty === undefined) return;
+    document.getElementById('out_dur_1').value = _calc_dur(in_qty, in_dur, out_qty);
+  }
+  return false;
+}
+
+function swap() {
+  STATE.show_dur2qty = !STATE.show_dur2qty
+  redraw()
+  return false
+}
+
+  </script>
+</head>
+<body onload="redraw()">
+  <h1>Unit Converter</h1>
+  <div id="convert">
+    <div id="input">
+      <div class="picker">
+        <div class="qty"><input id="in_qty" type="number" value="1" onchange="handle()" /> thing(s)</div>
+        <span class="mid">in</span>
+        <div class="duration"><input id="in_dur" type="text" value="1 second" onchange="handle()"/></div>
+      </div>
+    </div>
+    <div id="output">
+      <div class="picker qty2dur">
+        <div class="qty"><input id="out_qty_1" type="number" value="1" onchange="handle()" /> thing(s)</div>
+        <span class="mid">in</span>
+        <div class="duration"><input id="out_dur_1" type="text" value="1 second" onchange="handle()" readonly /></div>
+      </div>
+      <div class="picker dur2qty">
+        <div class="duration"><input id="out_dur_2" type="text" value="1 second" onchange="handle()" /></div>
+        <span class="mid">for</span>
+        <div class="qty"><input id="out_qty_2" type="number" value="1" onchange="handle()" readonly /> thing(s)</div>
+      </div>
+      <button onclick="swap()">swap</button>
+    </div>
+  </div>
+  <div id="examples">
+    <div id="ex_time"></div>
+    <div id="ex_qty"></div>
+  </div>
+</body>
+</html>
